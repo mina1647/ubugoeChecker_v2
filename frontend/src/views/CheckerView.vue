@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import UserMessage from '@/components/Message.vue'
+// import UserMessage from '@/components/Message.vue'
 
 const messages = ref<{ id: string; message: string }[]>([])
 const query = ref<string>('')

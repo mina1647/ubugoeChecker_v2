@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { computed } from 'vue'
 
 const { id, isHover = true } = defineProps<{
   id: string
   isHover?: boolean
 }>()
 
-const imageUrl = ref(`https://q.trap.jp/api/v3/public/icon/${id}`)
+const imageUrl = computed(() => `https://q.trap.jp/api/v3/public/icon/${id}`)
 </script>
 
 <template>

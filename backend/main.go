@@ -10,11 +10,15 @@ import (
 	"github.com/traPtitech/go-traq"
 )
 
-type Message struct {
+type TimesUbugoe struct {
 	Content string `json:"message"`
 	UserID  string `json:"userId"`
 }
 
+type TrueUbugoe struct {
+	Content string `json:"message"`
+	Channel string `json:"channel"`
+}
 type Handler struct {
 	client *traq.APIClient
 	token  string
@@ -39,18 +43,18 @@ func main() {
 
 	e := echo.New()
 
-	e.GET("/api/ubugoe/:userId", handler.GetMessages)
+	e.GET("/api/messages/:userId", handler.GETTimesUbugoe)
+	e.GET("/api/messages/true/:username", handler.GETTrueUbugoe)
 
 	e.Start(":8080")
 }
 
-func (h *Handler) GetMessages(c echo.Context) error {
+func (h *Handler) GETTimesUbugoe(c echo.Context) error {
 	auth := h.makeAuth(c.Request().Context())
 	userID := c.Param("userId")
 	fmt.Println("User ID:", userID)
 
-	channelList, _, err := h.client.ChannelApi.GetChannels(auth).Path("gps/times/" + userID).Execute()
-	//_, _, err := client.UserApi.GetUser(context.Background(), userID).Execute()
+	channelList, _, err := h.client.ChannelAPI.GetChannels(auth).Path("gps/times/" + userID).Execute()
 	if err != nil {
 		c.Logger().Error(err)
 		return c.JSON(500, "something went wrong")
@@ -61,18 +65,74 @@ func (h *Handler) GetMessages(c echo.Context) error {
 	channel := channelList.Public[0]
 	channelID := channel.Id
 
-	messages, _, _ := h.client.MessageApi.GetMessages(auth, channelID).
+	messages, _, _ := h.client.MessageAPI.GetMessages(auth, channelID).
 		Since(time.Date(1970, 1, 1, 0, 0, 0, 0, time.Local)).
 		Limit(10).
 		Order("asc").
 		Execute()
 
-	res := make([]Message, 0, len(messages))
+	res := make([]TimesUbugoe, 0, len(messages))
 	for _, message := range messages {
 
-		res = append(res, Message{
+		userNameList, _, err := h.client.UserAPI.GetUser(auth, message.UserId).Execute()
+		if err != nil {
+			c.Logger().Error(err)
+			return c.JSON(500, "something went wrong")
+		}
+		userName := userNameList.Name
+
+		res = append(res, TimesUbugoe{
 			Content: message.Content,
-			UserID:  message.UserId,
+			UserID:  userName,
+		})
+	}
+
+	return c.JSON(200, res)
+}
+
+func (h *Handler) GETTrueUbugoe(c echo.Context) error {
+	auth := h.makeAuth(c.Request().Context())
+
+	name := c.Param("username")
+	fmt.Println("User Name:", name)
+
+	userID, _, err := h.client.UserAPI.GetUsers(auth).
+		Name(name).
+		Execute()
+
+	if err != nil {
+		c.Logger().Error(err)
+		return c.JSON(500, "something went wrong")
+	}
+	if len(userID) == 0 {
+		return c.JSON(404, "No user found")
+	}
+
+	messages, _, err := h.client.MessageAPI.SearchMessages(auth).
+		From([]string{userID[0].Id}).
+		Limit(10).
+		Sort("-createdAt").
+		Execute()
+
+	if err != nil {
+		c.Logger().Error(err)
+		return c.JSON(500, "something went wrong")
+	}
+
+	res := make([]TrueUbugoe, 0, len(messages.Hits))
+	for _, message := range messages.Hits {
+		channelID := message.ChannelId
+		content := message.Content
+
+		channel, _, err := h.client.ChannelAPI.GetChannel(auth, channelID).Execute()
+		if err != nil {
+			c.Logger().Error(err)
+			return c.JSON(500, "something went wrong")
+		}
+		channelName := channel.Name
+		res = append(res, TrueUbugoe{
+			Content: content,
+			Channel: channelName,
 		})
 	}
 

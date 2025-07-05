@@ -43,8 +43,13 @@ const checker = async (name: string) => {
   <div class="checker">
     <h1>うぶごえチェッカー</h1>
     <!-- <p>ここにうぶごえチェッカーの内容が入ります。</p> -->
-    <input type="text" v-model="query" placeholder="traQIDを入力してください" class="nameinput" />
-    <button @click="checker(query)">検索</button>
+    <v-text-field
+      type="text"
+      v-model="query"
+      placeholder="traQIDを入力してください"
+      class="nameinput"
+    />
+    <v-btn variant="outlined" @click="checker(query)">検索</v-btn>
 
     <!-- <div v-for="message in messages" :key="message.id">
       <UserMessage class="user" :id="message.id" :message="message.message" />

@@ -18,6 +18,7 @@ type TimesUbugoe struct {
 type TrueUbugoe struct {
 	Content string `json:"message"`
 	Channel string `json:"channel"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 type Handler struct {
 	client *traq.APIClient
@@ -133,6 +134,7 @@ func (h *Handler) GETTrueUbugoe(c echo.Context) error {
 		res = append(res, TrueUbugoe{
 			Content: content,
 			Channel: channelName,
+			CreatedAt: message.CreatedAt,
 		})
 	}
 

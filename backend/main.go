@@ -3,11 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/traPtitech/go-traq"
+
+	traqwsbot "github.com/traPtitech/traq-ws-bot"
+	payload "github.com/traPtitech/traq-ws-bot/payload"
 )
 
 type TimesUbugoe struct {
@@ -16,8 +20,8 @@ type TimesUbugoe struct {
 }
 
 type TrueUbugoe struct {
-	Content string `json:"message"`
-	Channel string `json:"channel"`
+	Content   string    `json:"message"`
+	Channel   string    `json:"channel"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 type Handler struct {
@@ -42,12 +46,36 @@ func main() {
 
 	handler := NewHandler(token, client)
 
+	bot, err := traqwsbot.NewBot(&traqwsbot.Options{
+		AccessToken: token,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	bot.OnMessageCreated(func(p *payload.MessageCreated) {
+		log.Println("Received MESSAGE_CREATED event: " + p.Message.Text)
+		_, _, err := bot.API().
+			MessageAPI.
+			PostMessage(context.Background(), p.Message.ChannelID).
+			PostMessageRequest(traq.PostMessageRequest{
+				Content: "oisu-",
+			}).
+			Execute()
+		if err != nil {
+			log.Println(err)
+		}
+	})
+
+	if err := bot.Start(); err != nil {
+		panic(err)
+	}
 	e := echo.New()
 
 	e.GET("/api/messages/:userId", handler.GETTimesUbugoe)
 	e.GET("/api/messages/true/:username", handler.GETTrueUbugoe)
 
-	e.Start(":8080")
+	// e.Start(":8080")
 }
 
 func (h *Handler) GETTimesUbugoe(c echo.Context) error {
@@ -132,8 +160,8 @@ func (h *Handler) GETTrueUbugoe(c echo.Context) error {
 		}
 		channelName := channel.Name
 		res = append(res, TrueUbugoe{
-			Content: content,
-			Channel: channelName,
+			Content:   content,
+			Channel:   channelName,
 			CreatedAt: message.CreatedAt,
 		})
 	}

@@ -5,9 +5,12 @@ go 1.24.4
 require (
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/traPtitech/go-traq v0.0.0-20250705130218-99025a7686aa
+	github.com/traPtitech/traq-ws-bot v1.2.1
 )
 
 require (
+	github.com/gofrs/uuid/v5 v5.3.0 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

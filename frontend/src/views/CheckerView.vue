@@ -4,9 +4,11 @@ import { ref } from 'vue'
 
 const messages = ref<{ id: string; message: string }[]>([])
 const query = ref<string>('')
+const path = ref(false)
 
 const checker = async (name: string) => {
-  const response = await fetch(`/api/messages/true/${name}`, {
+  const url = `/api/messages${!path.value ? '/true' : ''}/${name}`
+  const response = await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -51,9 +53,7 @@ const checker = async (name: string) => {
     />
     <v-btn variant="outlined" @click="checker(query)">検索</v-btn>
 
-    <!-- <div v-for="message in messages" :key="message.id">
-      <UserMessage class="user" :id="message.id" :message="message.message" />
-    </div> -->
+    <v-switch v-model="path" color="blue" label="timesのうぶごえを見る" hide-details />
 
     <div v-for="item in messages" :key="item.id" class="user">
       {{ item.message }}

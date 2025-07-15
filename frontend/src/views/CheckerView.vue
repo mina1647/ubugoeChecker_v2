@@ -6,7 +6,7 @@ const messages = ref<{ id: string; message: string }[]>([])
 const query = ref<string>('')
 
 const checker = async (name: string) => {
-  const response = await fetch(`/api/ubugoe/${name}`, {
+  const response = await fetch(`/api/messages/true/${name}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
